@@ -1,0 +1,34 @@
+Tokenizer/BPE notes
+--------------------
+
+- vocab / merges 预处理：
+  - byte2id = {bytes_token -> id}，方便查最终 id。
+  - merge_rank = {(tok1, tok2) -> rank}，rank 越小优先级越高。
+  - special_tokens_sorted = 按长度从长到短排序的特殊 token 列表。
+
+- 特殊 token 处理：
+  - 扫描原文，最长优先匹配 special_tokens_sorted。
+  - 命中特殊 token：直接 seg.encode("utf-8") 查 byte2id 得到 id。
+  - 普通片段：留待 BPE 合并。
+
+- BPE 合并（近 O(n log n)）：
+  1) 初始 tokens = [bytes([b]) for b in text.encode("utf-8")].
+  2) 邻接表：prev[i]=i-1，nxt[i]=i+1，nxt[-1]=-1；alive[i]=True。
+  3) 堆 heapq 存 (rank, i)，表示可合并对 (tokens[i], tokens[next[i]])。
+     初始化扫描所有相邻对，在 merge_rank 中的入堆。
+  4) 循环：
+     - pop (rank, i)；若 i 或右邻已失效，或当前 pair 的 rank != rank，continue（懒删除）。
+     - 合并 tokens[i] = tokens[i] + tokens[j]（j=next[i]），alive[j]=False。
+     - 重连链表：nxt[i]=nxt[j]；若存在新右邻 nj，prev[nj]=i。
+     - 只更新左右两个位置的候选对： (prev[i], i) 与 (i, next[i])，若在 merge_rank 再入堆。
+  5) 沿 nxt 遍历 alive 的节点收集最终 tokens。
+
+- 为什么用堆+邻接：
+  - 每次要取全局最低 rank 的 pair；堆 O(log n) 维护，避免 O(n²) 全表重扫。
+  - 邻接表让“删除/合并”时只触及局部的左右邻居；懒删除避免在堆里做显式删项。
+
+- decode 思路（对称）：
+  - ids -> bytes via vocab[id]，拼接后 utf-8 解码；特殊 token 同样在 vocab 中可还原。
+
+- 复杂度：
+  - 朴素重扫是 O(n²)；堆方案 ~O(n log n)，适合大语料（TinyStories）。
