@@ -1,7 +1,10 @@
 import heapq
 import json
+import regex
 
 from typing import Iterable, Iterator
+
+GPT2_SPLIT_PATTERN = r"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"
 
 class tokenizer:
     def __init__(self, vocab, merges, special_tokens=None):
@@ -149,11 +152,12 @@ class tokenizer:
                     raise KeyError(f"Special token {segment!r} not in vocab")
                 token_ids.append(tok_id)
             else:
-                for tok in bpe_merge(segment.encode("utf-8")):
-                    tok_id = self.byte2id.get(tok)
-                    if tok_id is None:
-                        raise KeyError(f"Token bytes {tok} not in vocab")
-                    token_ids.append(tok_id)
+                for sub_text in regex.findall(GPT2_SPLIT_PATTERN, segment):
+                    for tok in bpe_merge(sub_text.encode("utf-8")):
+                        tok_id = self.byte2id.get(tok)
+                        if tok_id is None:
+                            raise KeyError(f"Token bytes {tok} not in vocab")
+                        token_ids.append(tok_id)
 
         return token_ids
 
@@ -161,6 +165,7 @@ class tokenizer:
         for chunk in iterable:
             for tok_id in self.encode(chunk):
                 yield tok_id
+
 
     def decode(self, ids: list[int]) -> str:
         byte_seq = b"".join(self.vocab[i] for i in ids)
