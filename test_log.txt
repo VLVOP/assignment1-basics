@@ -15,7 +15,7 @@ tests/test_tokenizer.py::test_roundtrip_ascii_string PASSED
 tests/test_tokenizer.py::test_ascii_string_matches_tiktoken PASSED
 tests/test_tokenizer.py::test_roundtrip_unicode_string PASSED
 tests/test_tokenizer.py::test_unicode_string_matches_tiktoken PASSED
-tests/test_tokenizer.py::test_roundtrip_unicode_string_with_special_tokens FAILED
+tests/test_tokenizer.py::test_roundtrip_unicode_string_with_special_tokens PASSED
 tests/test_tokenizer.py::test_unicode_string_with_special_tokens_matches_tiktoken PASSED
 tests/test_tokenizer.py::test_overlapping_special_tokens PASSED
 tests/test_tokenizer.py::test_address_roundtrip PASSED
@@ -31,34 +31,4 @@ tests/test_tokenizer.py::test_encode_iterable_tinystories_matches_tiktoken PASSE
 tests/test_tokenizer.py::test_encode_iterable_memory_usage PASSED
 tests/test_tokenizer.py::test_encode_memory_usage XFAIL (Tokenizer.e...)
 
-=================================== FAILURES ===================================
-______________ test_roundtrip_unicode_string_with_special_tokens _______________
-
-    def test_roundtrip_unicode_string_with_special_tokens():
-        tokenizer = get_tokenizer_from_vocab_merges_path(
-            vocab_path=VOCAB_PATH, merges_path=MERGES_PATH, special_tokens=["<|endoftext|>"]
-        )
-        test_string = "Héllò hôw <|endoftext|><|endoftext|> are ü? 🙃<|endoftext|>"
-        encoded_ids = tokenizer.encode(test_string)
->       tokenized_string = [tokenizer.decode([x]) for x in encoded_ids]
-                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tests/test_tokenizer.py:225: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-tests/test_tokenizer.py:225: in <listcomp>
-    tokenized_string = [tokenizer.decode([x]) for x in encoded_ids]
-                        ^^^^^^^^^^^^^^^^^^^^^
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <cs336_basics.tokenizer.tokenizer object at 0x7f7c98962890>, ids = [127]
-
-    def decode(self, ids: list[int]) -> str:
-        byte_seq = b"".join(self.vocab[i] for i in ids)
->       return byte_seq.decode("utf-8")
-               ^^^^^^^^^^^^^^^^^^^^^^^^
-E       UnicodeDecodeError: 'utf-8' codec can't decode byte 0xc3 in position 0: unexpected end of data
-
-cs336_basics/tokenizer.py:172: UnicodeDecodeError
-=========================== short test summary info ============================
-FAILED tests/test_tokenizer.py::test_roundtrip_unicode_string_with_special_tokens
-=================== 1 failed, 23 passed, 1 xfailed in 26.35s ===================
+======================== 24 passed, 1 xfailed in 26.62s ========================

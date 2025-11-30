@@ -10,15 +10,34 @@ def train_bpe(
 ) -> tuple[dict[int, bytes], list[tuple[bytes, bytes]]]:
     
     word_counts = collections.Counter()
+
+    escaped_toekns = [regex.escape(token) for token in special_tokens]
+
+    joined_pattern = "|".join(escaped_toekns)
+
+    final_pattern = "(" + joined_pattern + ")"
     
     with open(input_path, 'r', encoding='utf-8') as f:
         for line in f:
-            text = regex.findall(GPT2_SPLIT_PATTERN, line)
-            for word_str in text:
-                word_bytes = word_str.encode('utf-8')
-                word_tuples = tuple(bytes([word_bytes[i]]) for i in range(len(word_bytes)))
-                word_counts[word_tuples] += 1
-            
+
+            if not special_tokens:
+                parts = [line]
+            else:
+                parts = regex.split(final_pattern, line)
+
+            for part in parts:
+                if not part:
+                    continue
+
+                if special_tokens and part in special_tokens:
+                    continue
+
+                sub_parts = regex.findall(GPT2_SPLIT_PATTERN, part)
+                for word_str in sub_parts:
+                    word_bytes = word_str.encode('utf-8')
+                    word_tuple = tuple([bytes([b]) for b in word_bytes])
+                    word_counts[word_tuple] += 1
+                    
             
     vocab : dict[int, bytes] = {}
 
