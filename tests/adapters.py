@@ -8,6 +8,8 @@ import numpy.typing as npt
 import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
+from cs336_basics.RMSNorm import llmRMSNorm
+from cs336_basics.SwiGLU import llmSWiGLU
 from cs336_basics.embedding import llmEmbeddingModel
 from cs336_basics.tokenizer import tokenizer
 from cs336_basics.train_bpe import train_bpe
@@ -94,7 +96,16 @@ def run_swiglu(
     # swiglu.w1.weight.data = w1_weight
     # swiglu.w2.weight.data = w2_weight
     # swiglu.w3.weight.data = w3_weight
-    raise NotImplementedError
+    swiglu = llmSWiGLU(d_model, d_ff, device=w1_weight.device, dtype=w1_weight.dtype)
+    swiglu.load_state_dict({
+        'linear1.W': w1_weight,
+        'linear2.W': w2_weight,
+        'linear3.W': w3_weight,
+    })
+
+    return swiglu(in_features)
+
+    # raise NotImplementedError
 
 
 def run_scaled_dot_product_attention(
@@ -389,7 +400,12 @@ def run_rmsnorm(
         Float[Tensor,"... d_model"]: Tensor of with the same shape as `in_features` with the output of running
         RMSNorm of the `in_features`.
     """
-    raise NotImplementedError
+    RMSNormModel = llmRMSNorm(d_model, eps, device=weights.device, dtype=weights.dtype)
+    RMSNormModel.load_state_dict({'g': weights})
+
+    return RMSNormModel(in_features)
+
+    # raise NotImplementedError
 
 
 def run_silu(in_features: Float[Tensor, " ..."]) -> Float[Tensor, " ..."]:
