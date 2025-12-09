@@ -2,6 +2,9 @@ import collections
 import heapq
 import regex
 
+from multiprocessing import Pool, cpu_count
+from collections import Counter
+
 GPT2_SPLIT_PATTERN = r"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"
 
 
@@ -15,6 +18,7 @@ class _RevPair:
 
     def __lt__(self, other: "._RevPair") -> bool:  # type: ignore[name-defined]
         return self.pair > other.pair
+
 
 
 def train_bpe(

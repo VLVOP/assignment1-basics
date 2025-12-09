@@ -4,27 +4,25 @@ import os
 from train_bpe import train_bpe
 from train_bpe import read_chunks
 from tokenizer import tokenizer
+from bpe_utils import bytes_to_unicode_str
 
 def save_vocab(vocab: dict[int, bytes], filepath: str):
 
+    # Save as token_str -> id, using standard GPT-2 mapping
     vocab_to_save = {
-        str(idx) : list(token_bytes)
+        bytes_to_unicode_str(token_bytes): idx
         for idx, token_bytes in vocab.items()
     }
 
     with open(filepath, 'w', encoding='utf-8') as f:
-        json.dump(vocab_to_save, f)
+        json.dump(vocab_to_save, f, indent=2, ensure_ascii=False)
 
 def save_merges(merges: list[tuple[bytes, bytes]], filepath: str):
     with open(filepath, 'w', encoding='utf-8') as f:
         for b1, b2 in merges:
-
-            try :
-                s1 = b1.decode("utf-8")
-                s2 = b2.decode("utf-8")
-                f.write(f"{s1} {s2}\n")
-            except UnicodeDecodeError:
-                pass
+            s1 = bytes_to_unicode_str(b1)
+            s2 = bytes_to_unicode_str(b2)
+            f.write(f"{s1} {s2}\n")
 
 def ReservoirSample(stream, k):
 
@@ -112,25 +110,25 @@ if __name__ == "__main__":
     tiny_vocab_path = os.path.join(data_dir, "TinyStoriesV2-GPT4-vocab.json")
     tiny_merges_path = os.path.join(data_dir, "TinyStoriesV2-GPT4-merges.txt")
 
-    print(f"Training OWT tokenizer from {owt_input_path}...")
-    owt_vocab, owt_merges = train_bpe(
-        input_path = owt_input_path,
-        vocab_size = 10000,
-        special_tokens = ["<|endoftext|>"]
-    )
+    # print(f"Training OWT tokenizer from {owt_input_path}...")
+    # owt_vocab, owt_merges = train_bpe(
+    #     input_path = owt_input_path,
+    #     vocab_size = 10000,
+    #     special_tokens = ["<|endoftext|>"]
+    # )
 
-    save_vocab(owt_vocab, owt_vocab_path)
-    save_merges(owt_merges, owt_merges_path)
+    # save_vocab(owt_vocab, owt_vocab_path)
+    # save_merges(owt_merges, owt_merges_path)
 
-    print(f"Training TinyStories tokenizer from {tiny_input_path}...")
-    Tiny_vocab, Tiny_merges = train_bpe(
-        input_path = tiny_input_path,
-        vocab_size = 32000,
-        special_tokens=["<|endoftext|>"]
-    )
+    # print(f"Training TinyStories tokenizer from {tiny_input_path}...")
+    # Tiny_vocab, Tiny_merges = train_bpe(
+    #     input_path = tiny_input_path,
+    #     vocab_size = 32000,
+    #     special_tokens=["<|endoftext|>"]
+    # )
 
-    save_vocab(Tiny_vocab, tiny_vocab_path)
-    save_merges(Tiny_merges, tiny_merges_path)
+    # save_vocab(Tiny_vocab, tiny_vocab_path)
+    # save_merges(Tiny_merges, tiny_merges_path)
 
     print("Sampling documents for evaluation...")
     owt_docs = get_sample_docs(owt_input_path, num_docs=10)

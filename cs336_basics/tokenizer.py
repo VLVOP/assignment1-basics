@@ -3,6 +3,7 @@ import json
 import regex
 
 from typing import Iterable, Iterator
+from .bpe_utils import unicode_str_to_bytes
 
 GPT2_SPLIT_PATTERN = r"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"
 
@@ -30,8 +31,10 @@ class tokenizer:
         
         vocab = {}
 
-        for idx_str, byte_list in vocab_dict.items():
-            vocab[int(idx_str)] = bytes(byte_list)
+        for token_str, idx in vocab_dict.items():
+            # The file maps token_string -> id
+            # We need id -> bytes
+            vocab[int(idx)] = unicode_str_to_bytes(token_str)
         
         return vocab
     
@@ -41,13 +44,15 @@ class tokenizer:
         with open(filepath, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
-                if not line :
+                # Skip empty lines or comments
+                if not line or line.startswith("#"):
                     continue
 
+                # Split by space
                 parts = line.split()
-                if len(parts) >= 2:
-                    byte1 = parts[0].encode("utf-8")
-                    byte2 = parts[1].encode("utf-8")
+                if len(parts) == 2:
+                    byte1 = unicode_str_to_bytes(parts[0])
+                    byte2 = unicode_str_to_bytes(parts[1])
                     merges.append((byte1, byte2))
 
         return merges
