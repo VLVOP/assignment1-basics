@@ -16,6 +16,7 @@ from cs336_basics.tokenizer import tokenizer
 from cs336_basics.train_bpe import train_bpe
 from cs336_basics.linear import llmLinearModel
 from cs336_basics.softmax import softmax
+from cs336_basics.scaled_dot_product_attention import scaledDotProductAttention
 
 
 def run_linear(
@@ -128,7 +129,12 @@ def run_scaled_dot_product_attention(
     Returns:
         Float[Tensor, " ... queries d_v"]: Output of SDPA
     """
-    raise NotImplementedError
+
+    attn_score = scaledDotProductAttention(Q, K, V, mask)
+
+    return attn_score
+
+    # raise NotImplementedError
 
 
 def run_multihead_self_attention(
