@@ -21,6 +21,8 @@ from cs336_basics.softmax import softmax
 from cs336_basics.scaled_dot_product_attention import scaledDotProductAttention
 from einops import rearrange, repeat
 
+from cs336_basics.transformer_lm import transformerLM
+
 
 
 def run_linear(
@@ -178,7 +180,7 @@ def run_multihead_self_attention(
     qkv_weight = rearrange(
         [q_proj_weight, k_proj_weight, v_proj_weight],
         "three d_all d_in -> (three d_all) d_in",
-        h = num_heads
+        three = 3
     )
 
     model.load_state_dict({
@@ -234,7 +236,7 @@ def run_multihead_self_attention_with_rope(
     qkv_weight = rearrange(
         [q_proj_weight, k_proj_weight, v_proj_weight],
         "three d_all d_in -> (three d_all) d_in",
-        h = num_heads
+        three = 3
     )
 
     model.load_state_dict({
@@ -357,7 +359,7 @@ def run_transformer_block(
     qkv_weight = rearrange(
         [weights["attn.q_proj.weight"], weights["attn.k_proj.weight"], weights["attn.v_proj.weight"]],
         "three d_all d_in -> (three d_all) d_in",
-        h = num_heads
+        three = 3
     )
     block.load_state_dict({
         'MHA.w_qkv.W': qkv_weight,
@@ -460,7 +462,37 @@ def run_transformer_lm(
         Float[Tensor, "batch_size sequence_length vocab_size"]: Tensor with the predicted unnormalized
         next-word distribution for each token.
     """
-    raise NotImplementedError
+
+    model = transformerLM(vocab_size, context_length, num_layers, d_model, num_heads, d_ff, rope_theta, device=in_indices.device, dtype=in_indices.dtype)
+
+    sd = {}
+
+    sd["embedding.matrix"] = weights["token_embeddings.weight"]
+    sd["RMSNorm.g"] = weights["ln_final.weight"]
+    sd["linear.W"] = weights["lm_head.weight"]
+
+    for i in range(num_layers):
+        q = weights[f"layers.{i}.attn.q_proj.weight"]
+        k = weights[f"layers.{i}.attn.k_proj.weight"]
+        v = weights[f"layers.{i}.attn.v_proj.weight"]
+
+        qkv = rearrange([q, k, v], "three (h d) d_in -> (three h d) d_in", h=num_heads, three=3)
+
+        sd[f"layers.{i}.MHA.w_qkv.W"] = qkv
+        sd[f"layers.{i}.MHA.linear.W"] = weights[f"layers.{i}.attn.output_proj.weight"]
+
+        sd[f"layers.{i}.FFN.linear1.W"] = weights[f"layers.{i}.ffn.w1.weight"]
+        sd[f"layers.{i}.FFN.linear2.W"] = weights[f"layers.{i}.ffn.w2.weight"]
+        sd[f"layers.{i}.FFN.linear3.W"] = weights[f"layers.{i}.ffn.w3.weight"]
+
+        sd[f"layers.{i}.RMSNorm1.g"] = weights[f"layers.{i}.ln1.weight"]
+        sd[f"layers.{i}.RMSNorm2.g"] = weights[f"layers.{i}.ln2.weight"]
+
+    model.load_state_dict(sd)
+
+    return model(in_indices)
+
+    # raise NotImplementedError
 
 
 def run_rmsnorm(
