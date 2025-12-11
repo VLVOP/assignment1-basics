@@ -8,6 +8,7 @@ import numpy.typing as npt
 import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
+from cs336_basics.transformer_block import preNormTransBlock
 from cs336_basics.RMSNorm import llmRMSNorm
 from cs336_basics.RoPE import RotaryPositionalEmbedding
 from cs336_basics.SwiGLU import llmSWiGLU
@@ -18,7 +19,7 @@ from cs336_basics.train_bpe import train_bpe
 from cs336_basics.linear import llmLinearModel
 from cs336_basics.softmax import softmax
 from cs336_basics.scaled_dot_product_attention import scaledDotProductAttention
-from einops import rearrange
+from einops import rearrange, repeat
 
 
 
@@ -347,7 +348,37 @@ def run_transformer_block(
         Float[Tensor, "batch sequence_length d_model"] Tensor with the output of
         running the Transformer block on the input features while using RoPE.
     """
-    raise NotImplementedError
+
+    block = preNormTransBlock(d_model, num_heads, d_ff, in_features.device, in_features.dtype)
+    d_k = d_model // num_heads
+    rope = RotaryPositionalEmbedding(theta, d_k, max_seq_len, device=in_features.device)
+    block.to(in_features.device)
+
+    qkv_weight = rearrange(
+        [weights["attn.q_proj.weight"], weights["attn.k_proj.weight"], weights["attn.v_proj.weight"]],
+        "three d_all d_in -> (three d_all) d_in",
+        h = num_heads
+    )
+    block.load_state_dict({
+        'MHA.w_qkv.W': qkv_weight,
+        'MHA.linear.W': weights["attn.output_proj.weight"],
+        'RMSNorm1.g': weights["ln1.weight"],
+        'RMSNorm2.g': weights["ln2.weight"],
+        'FFN.linear1.W': weights["ffn.w1.weight"],
+        'FFN.linear2.W': weights["ffn.w2.weight"],
+        'FFN.linear3.W': weights["ffn.w3.weight"]
+    })
+
+    batch, seq_len, _ = in_features.shape
+    pos = torch.arange(in_features.shape[-2], device=in_features.device)
+    token_position = repeat(pos, "s -> b s", b = batch)
+
+    return block(in_features, rope, token_position)
+
+    
+    
+
+    # raise NotImplementedError
 
 
 def run_transformer_lm(

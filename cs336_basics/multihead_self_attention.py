@@ -10,14 +10,14 @@ from cs336_basics.RoPE import RotaryPositionalEmbedding
 
 
 class causalMultiheadSelfAttention(nn.Module):
-    def __init__(self, d_model: int, num_heads: int):
+    def __init__(self, d_model: int, num_heads: int, device=None, dtype=None):
         super(causalMultiheadSelfAttention, self).__init__()
 
         self.num_heads = num_heads
         self.d_head = d_model // num_heads
-        self.w_qkv = llmLinearModel(d_model, 3 * d_model)
+        self.w_qkv = llmLinearModel(d_model, 3 * d_model, device=device, dtype=dtype)
 
-        self.linear = llmLinearModel(d_model, d_model)
+        self.linear = llmLinearModel(d_model, d_model, device=device, dtype=dtype)
 
     def forward(self, x: Float[Tensor, "batch_size ... seq_len d_model"], rope=None, token_position=None) -> Float[Tensor, "... seq_len d_out"]:
         Q, K, V = rearrange(
