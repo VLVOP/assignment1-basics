@@ -8,6 +8,7 @@ import numpy.typing as npt
 import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
+from cs336_basics import SiLU
 from cs336_basics.transformer_block import preNormTransBlock
 from cs336_basics.RMSNorm import llmRMSNorm
 from cs336_basics.RoPE import RotaryPositionalEmbedding
@@ -534,7 +535,12 @@ def run_silu(in_features: Float[Tensor, " ..."]) -> Float[Tensor, " ..."]:
         Float[Tensor,"..."]: of with the same shape as `in_features` with the output of applying
         SiLU to each element.
     """
-    raise NotImplementedError
+
+    silu = SiLU()
+
+    return SiLU(x)
+
+    # raise NotImplementedError
 
 
 def run_get_batch(
