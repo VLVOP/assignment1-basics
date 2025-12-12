@@ -538,7 +538,7 @@ def run_silu(in_features: Float[Tensor, " ..."]) -> Float[Tensor, " ..."]:
 
     silu = SiLU()
 
-    return SiLU(x)
+    return SiLU(in_features)
 
     # raise NotImplementedError
 
