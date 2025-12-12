@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 from jaxtyping import Float
 from torch import Tensor
+from cs336_basics import SiLU
 from cs336_basics.linear import llmLinearModel
 
 class llmSWiGLU(nn.Module):
@@ -10,7 +11,7 @@ class llmSWiGLU(nn.Module):
         self.linear1 = llmLinearModel(d_model, d_ff, device=device, dtype=dtype)
         self.linear2 = llmLinearModel(d_ff, d_model, device=device, dtype=dtype)
         self.linear3 = llmLinearModel(d_model, d_ff, device=device, dtype=dtype)
-        self.silu = nn.SiLU()
+        self.silu = SiLU()
     
     def forward(self, x: Float[Tensor, "... d_model"]) -> Float[Tensor, "... d_model"]:
         x1 = self.linear1(x)
