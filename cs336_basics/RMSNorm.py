@@ -1,3 +1,4 @@
+from einops import einsum
 import torch.nn as nn
 import torch
 from jaxtyping import Float
@@ -17,6 +18,6 @@ class llmRMSNorm(nn.Module):
 
         # RMS calculation
         RMS_a = math.sqrt(torch.mean(x ** 2, dim=-1, keepdim=True) + self.eps)
-        x_normed = (x @ self.g) / RMS_a
+        x_normed = einsum("b s d, d -> b s d", x, self.g) / RMS_a
 
         return x_normed.to(in_dtype)
