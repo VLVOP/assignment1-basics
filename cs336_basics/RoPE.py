@@ -15,7 +15,7 @@ class RotaryPositionalEmbedding(nn.Module):
 
         i = torch.arange(max_seq_len, device=device)
 
-        freqs = einsum(i, inv_freq, "i , j -> i j") 
+        freqs = einsum(i, inv_freq, "i, j -> i j") 
         
         emb = repeat(freqs, "i j -> i (j repeat)", repeat=2)
 
@@ -34,12 +34,12 @@ class RotaryPositionalEmbedding(nn.Module):
             cos = rearrange(cos, f"... s d -> ... {pattern} s d")
             sin = rearrange(sin, f"... s d -> ... {pattern} s d")
         
-        x_pairs = rearrange(x, "... (d 2) -> ... d 2", d=self.d_k // 2)
+        x_pairs = rearrange(x, "... (d two) -> ... d two", d=self.d_k // 2)
 
         x1, x2 = x_pairs[..., 0], x_pairs[..., 1]
         x_rot_pairs = torch.stack((-x2, x1), dim=-1)
 
-        x_rotated = rearrange(x_rot_pairs, "... d 2 -> ... (d 2)")
+        x_rotated = rearrange(x_rot_pairs, "... d two -> ... (d two)")
 
         return x * cos + x_rotated * sin
 

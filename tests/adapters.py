@@ -464,7 +464,7 @@ def run_transformer_lm(
         next-word distribution for each token.
     """
 
-    model = transformerLM(vocab_size, context_length, num_layers, d_model, num_heads, d_ff, rope_theta, device=in_indices.device, dtype=in_indices.dtype)
+    model = transformerLM(vocab_size, context_length, num_layers, d_model, num_heads, d_ff, rope_theta, device=in_indices.device, dtype=weights["token_embeddings.weight"].dtype)
 
     sd = {}
 

@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from jaxtyping import Float
 from torch import Tensor
-from cs336_basics import SiLU
+from cs336_basics.SiLU import SiLU
 from cs336_basics.linear import llmLinearModel
 
 class llmSWiGLU(nn.Module):

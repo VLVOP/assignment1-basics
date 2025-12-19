@@ -17,7 +17,7 @@ class llmRMSNorm(nn.Module):
         x = x.to(torch.float32)
 
         # RMS calculation
-        RMS_a = math.sqrt(torch.mean(x ** 2, dim=-1, keepdim=True) + self.eps)
-        x_normed = einsum("b s d, d -> b s d", x, self.g) / RMS_a
+        RMS_a = torch.sqrt(torch.mean(x ** 2, dim=-1, keepdim=True) + self.eps)
+        x_normed = einsum(x, self.g, "b s d, d -> b s d") / RMS_a
 
         return x_normed.to(in_dtype)
