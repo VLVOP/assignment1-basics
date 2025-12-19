@@ -50,3 +50,53 @@ cd ..
 
 # CS336_lab1
 # assignment1-basics
+
+## Resource Accounting (GPT-2 XL)
+
+Based on the configuration:
+- `vocab_size`: 50,257
+- `context_length` (L): 1,024
+- `num_layers`: 48
+- `d_model` (D): 1,600
+- `num_heads` (H): 25
+- `d_ff`: 6,400 (SwiGLU)
+
+### FLOPs per Forward Pass (per Batch):
+
+1. **Multi-Head Attention (MHA) per Layer**:
+   - **QKV Projections**: $2 \times L \times D \times 3D = 15,728,640,000$ (15.73B)
+   - **SDPA ($QK^T + AV$)**: $4 \times L^2 \times D = 6,710,886,400$ (6.71B)
+   - **Output Projection**: $2 \times L \times D \times D = 5,242,880,000$ (5.24B)
+   - **MHA Total**: **27,682,406,400** (27.68B)
+
+2. **Feed-Forward Network (FFN) per Layer (SwiGLU)**:
+   - **W1, W2, W3 Layers**: $3 \times (2 \times L \times D \times d_{ff}) = 62,914,560,000$ (62.91B)
+   - **FFN Total**: **62,914,560,000** (62.91B)
+
+3. **Total per Block**:
+   - MHA + FFN = **90,596,966,400** (90.60B)
+
+4. **Full Model (48 Blocks)**:
+   - $48 \times 90.60B = 4,348,654,387,200$ (4,348.65B)
+
+5. **LM Head (Final Linear Layer)**:
+   - $2 \times L \times D \times \text{vocab\_size} = 164,682,137,600$ (164.68B)
+
+### Grand Total:
+**~4,513,336,524,800 FLOPs** (约 **4.51 TFLOPS**)
+
+## Model Scaling Comparison (Small, Medium, Large)
+
+Based on the same logic (T=1024, SwiGLU FFN), we compare the FLOPs distribution across different GPT-2 sizes:
+
+| Component | GPT-2 Small (12L, 768D) | GPT-2 Medium (24L, 1024D) | GPT-2 Large (36L, 1280D) |
+| :--- | :--- | :--- | :--- |
+| **Total FLOPs** | **~349.6 GFLOPs** | **~1.03 TFLOPs** | **~2.26 TFLOPs** |
+| **MHA (Attention)** | 27.6% | 29.9% | 30.0% |
+| **FFN (Feed-Forward)** | 49.8% | 59.9% | 64.2% |
+| **LM Head** | 22.6% | 10.2% | 5.8% |
+
+### Key Findings:
+- **FFN Dominance**: As models scale, the FFN blocks become the primary computational bottleneck, increasing from ~50% to nearly 65% of total FLOPs.
+- **LM Head Dilution**: The "fixed cost" of the final linear layer (LM Head) is significantly diluted as the model grows deeper and wider, dropping from 22.6% to 5.8%.
+- **Stable Attention**: Despite the $O(T^2)$ complexity, the Attention mechanism's relative contribution remains stable at around 30% for these model sizes and sequence lengths.
