@@ -100,3 +100,14 @@ Based on the same logic (T=1024, SwiGLU FFN), we compare the FLOPs distribution 
 - **FFN Dominance**: As models scale, the FFN blocks become the primary computational bottleneck, increasing from ~50% to nearly 65% of total FLOPs.
 - **LM Head Dilution**: The "fixed cost" of the final linear layer (LM Head) is significantly diluted as the model grows deeper and wider, dropping from 22.6% to 5.8%.
 - **Stable Attention**: Despite the $O(T^2)$ complexity, the Attention mechanism's relative contribution remains stable at around 30% for these model sizes and sequence lengths.
+
+## 長上下文分析 (問題 e)
+
+當我們將 GPT-2 XL 的 **上下文長度 ($T$)** 從 1,024 增加到 **16,384** (增加 16 倍) 時，計算資源的分佈發生了劇烈變化：
+
+- **總 FLOPs**: 從約 4.51 TFLOPs 激增至 **約 149.5 TFLOPs** (增加約 33 倍)。
+- **MHA 主導**: 由於點積注意力機制 (SDPA) 具有 $O(T^2)$ 的複雜度，多頭注意力 (MHA) 在總 FLOPs 中的佔比從 **約 30% 暴增至 約 66%**。
+- **FFN 被稀釋**: 前饋神經網絡 (FFN) 與長度呈線性 $O(T)$ 關係，其佔比從 **約 62% 下降至 約 32%**。
+
+### 結論：
+在長上下文的情境下，標準 Attention 機制的二次方增長特性會壓倒所有其他模型組件，取代 FFN 成為 Transformer 架構的主要計算瓶頸。
