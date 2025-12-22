@@ -9,6 +9,7 @@ import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
 from cs336_basics import SiLU
+from cs336_basics.cross_entropy import CEloss
 from cs336_basics.transformer_block import preNormTransBlock
 from cs336_basics.RMSNorm import llmRMSNorm
 from cs336_basics.RoPE import RotaryPositionalEmbedding
@@ -600,7 +601,10 @@ def run_cross_entropy(
     Returns:
         Float[Tensor, ""]: The average cross-entropy loss across examples.
     """
-    raise NotImplementedError
+
+    return CEloss(targets, inputs)
+
+    # raise NotImplementedError
 
 
 def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm: float) -> None:
