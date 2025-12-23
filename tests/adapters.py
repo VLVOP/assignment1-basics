@@ -8,7 +8,7 @@ import numpy.typing as npt
 import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
-from cs336_basics import SiLU
+from cs336_basics import AdamW, SiLU
 from cs336_basics.cross_entropy import CEloss
 from cs336_basics.transformer_block import preNormTransBlock
 from cs336_basics.RMSNorm import llmRMSNorm
@@ -623,7 +623,10 @@ def get_adamw_cls() -> Any:
     """
     Returns a torch.optim.Optimizer that implements AdamW.
     """
-    raise NotImplementedError
+
+    return AdamW
+
+    # raise NotImplementedError
 
 
 def run_get_lr_cosine_schedule(
