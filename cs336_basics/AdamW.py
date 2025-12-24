@@ -30,7 +30,7 @@ class AdamWoptimizer(torch.optim.Optimizer):
                 state = self.state[p]
 
                 if len(state) == 0:
-                    state["t"] = 0
+                    state["step"] = 0
                     state["m"] = torch.zeros_like(p.data)
                     state["v"] = torch.zeros_like(p.data)
                 
@@ -44,6 +44,9 @@ class AdamWoptimizer(torch.optim.Optimizer):
                 v = beta2 * v + (1 - beta2) * (grad ** 2)
                 lr_t = lr * sqrt(1 - beta2 ** t) / (1 - beta1 ** t)
 
-                p = p - lr_t * m / (torch.sqrt(v) + eps) - lr * weight_decay * p
+                p.data -= lr * weight_decay * p.data
+                p.data -= lr_t * m / (torch.sqrt(v) + eps)
+                state["m"] = m
+                state["v"] = v
 
         return loss
