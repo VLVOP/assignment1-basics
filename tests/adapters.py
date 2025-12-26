@@ -9,7 +9,8 @@ import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
 from cs336_basics.AdamW import AdamWoptimizer
-from cs336_basics import SiLU, lr_cosine_schedule
+from cs336_basics import SiLU
+from cs336_basics.lr_cosine_schedule import lr_cosine_schedule
 from cs336_basics.cross_entropy import CEloss
 from cs336_basics.gradient_clipping import clip_gradients
 from cs336_basics.transformer_block import preNormTransBlock
