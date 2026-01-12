@@ -10,9 +10,9 @@ def get_batch(
     device: str = "cpu",
 ) -> tuple[Int[Tensor, "batch_size context_length"], Int[Tensor, "batch_size context_length"]]:
     
-    len = len(x)
+    data_len = len(x)
 
-    ix = torch.randint(len - context_length, (batch_size,))
+    ix = torch.randint(data_len - context_length, (batch_size,))
 
     x_batch = [x[i : i + context_length].astype(np.int64) for i in ix]
     y_batch = [x[i + 1 : i + context_length + 1].astype(np.int64) for i in ix]
