@@ -11,6 +11,7 @@ from torch import Tensor
 from cs336_basics.AdamW import AdamWoptimizer
 from cs336_basics import SiLU
 from cs336_basics.lr_cosine_schedule import lr_cosine_schedule
+from cs336_basics.get_batch import get_batch
 from cs336_basics.cross_entropy import CEloss
 from cs336_basics.gradient_clipping import clip_gradients
 from cs336_basics.transformer_block import preNormTransBlock
@@ -567,7 +568,10 @@ def run_get_batch(
         is the sampled input sequences, and the second tuple item is the corresponding
         language modeling labels.
     """
-    raise NotImplementedError
+
+    return get_batch(dataset, batch_size, context_length, device)
+
+    # raise NotImplementedError
 
 
 def run_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, " ..."]:
