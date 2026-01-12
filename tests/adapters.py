@@ -25,6 +25,7 @@ from cs336_basics.train_bpe import train_bpe
 from cs336_basics.linear import llmLinearModel
 from cs336_basics.softmax import softmax
 from cs336_basics.scaled_dot_product_attention import scaledDotProductAttention
+from cs336_basics.checkpoint import save_checkpoint, load_checkpoint
 from einops import rearrange, repeat
 
 from cs336_basics.transformer_lm import transformerLM
@@ -686,7 +687,10 @@ def run_save_checkpoint(
             we've completed.
         out (str | os.PathLike | BinaryIO | IO[bytes]): Path or file-like object to serialize the model, optimizer, and iteration to.
     """
-    raise NotImplementedError
+
+    save_checkpoint(model, optimizer, iteration, out)
+
+    # raise NotImplementedError
 
 
 def run_load_checkpoint(
@@ -707,7 +711,10 @@ def run_load_checkpoint(
     Returns:
         int: the previously-serialized number of iterations.
     """
-    raise NotImplementedError
+
+    return load_checkpoint(src, model, optimizer)
+
+    # raise NotImplementedError
 
 
 def get_tokenizer(
