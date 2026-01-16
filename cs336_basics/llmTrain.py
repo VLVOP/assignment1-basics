@@ -3,6 +3,8 @@ import os
 import torch
 import numpy as np
 import wandb
+import time
+import json
 
 from cs336_basics.cross_entropy import CEloss
 from cs336_basics.gradient_clipping import clip_gradients
@@ -47,7 +49,14 @@ def train(args):
 
     model.train()
 
+    # Local logging setup
+    start_time = time.time()
+    log_file_path = os.path.join(args.checkpoint_dir, "log.jsonl")
+    print(f"Logging locally to {log_file_path}")
+    f_log = open(log_file_path, 'a', buffering=1) # Line buffered
+
     for i in range(start_iter, args.max_iters):
+        t0 = time.time()
 
         lr = lr_cosine_schedule(
             t=i,
@@ -82,7 +91,12 @@ def train(args):
 
         optimizer.step()
 
-        log_dict = {"loss": loss.item(), "lr": lr.item(), "iter": i}
+        # Timing
+        t1 = time.time()
+        dt = t1 - t0
+        elapsed_time = t1 - start_time
+
+        log_dict = {"loss": loss.item(), "lr": lr.item(), "iter": i, "time": elapsed_time, "dt": dt}
 
         if i % args.eval_interval == 0 or i == args.max_iters - 1:
             model.eval()
@@ -99,11 +113,12 @@ def train(args):
                     val_loss = CEloss(y_val, logits_val)
                     losses[k] = val_loss.item()
             model.train()
-            val_loss = losses.mean()
+            val_loss = losses.mean().item()
             log_dict["val_loss"] = val_loss
-            print(f"Step {i} Val Loss: {val_loss}")
+            print(f"Step {i} | Time: {elapsed_time:.2f}s | Loss: {loss.item():.4f} | Val Loss: {val_loss:.4f}")
 
         wandb.log(log_dict)
+        f_log.write(json.dumps(log_dict) + "\n")
 
         if i % args.save_interval == 0 and i > 0:
             checkpoint_path = os.path.join(args.checkpoint_dir, f"checkpoint_iter_{i}.pt")
