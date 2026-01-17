@@ -29,7 +29,8 @@ def train(args):
     optimizer = AdamWoptimizer(
         model.parameters(),
         lr=args.lr,
-        weight_decay=args.weight_decay
+        weight_decay=args.weight_decay,
+        betas=(args.beta1, args.beta2)
     )
 
     start_iter = 0
@@ -147,8 +148,9 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=16, help="批量大小")
     parser.add_argument("--lr", type=float, default=3e-4, help="初始学习率")
     parser.add_argument("--min_lr", type=float, default=1e-5, help="最小学习率")
+    parser.add_argument("--beta1", type=float, default=0.9, help="AdamW beta1")
+    parser.add_argument("--beta2", type=float, default=0.999, help="AdamW beta2")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="权重衰减系数")
-    parser.add_argument("--warmup_iters", type=int, default=1000, help="学习率预热迭代次数")
     parser.add_argument("--max_grad_norm", type=float, default=1.0, help="梯度裁剪的最大范数")
 
     parser.add_argument("--max_iters", type=int, default=100000, help="最大训练迭代次数")
