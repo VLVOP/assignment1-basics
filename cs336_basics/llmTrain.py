@@ -30,7 +30,8 @@ def train(args):
         model.parameters(),
         lr=args.lr,
         weight_decay=args.weight_decay,
-        betas=(args.beta1, args.beta2)
+        betas=(args.beta1, args.beta2),
+        eps=args.eps
     )
 
     start_iter = 0
@@ -160,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval_interval", type=int, default=1000, help="评估间隔（迭代次数）")
     parser.add_argument("--eval_iters", type=int, default=10, help="评估时的迭代次数")
     parser.add_argument("--save_interval", type=int, default=5000, help="保存检查点的间隔（迭代次数）")
+    parser.add_argument("--eps", type=float, default=1e-8, help="AdamW epsilon")
 
     args = parser.parse_args()
 

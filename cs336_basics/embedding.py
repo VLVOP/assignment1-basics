@@ -16,6 +16,6 @@ class llmEmbeddingModel(nn.Module):
             b=3 * std,
         )
 
-    def forward(self, token_ids: Float[Tensor, "batch_size, seq_len"]) -> Float[Tensor, "batch_size, seq_len, embedding_dim"]:
+    def forward(self, token_ids: Float[Tensor, "batch_size seq_len"]) -> Float[Tensor, "batch_size seq_len embedding_dim"]:
 
         return self.matrix[token_ids]

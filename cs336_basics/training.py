@@ -1,10 +1,9 @@
 import json
 import random
 import os
-from train_bpe import train_bpe
-from train_bpe import read_chunks
-from tokenizer import tokenizer
-from bpe_utils import bytes_to_unicode_str
+from cs336_basics.train_bpe import train_bpe, read_chunks
+from cs336_basics.tokenizer import tokenizer
+from cs336_basics.bpe_utils import bytes_to_unicode_str
 
 def save_vocab(vocab: dict[int, bytes], filepath: str):
 
@@ -113,35 +112,39 @@ if __name__ == "__main__":
     # print(f"Training OWT tokenizer from {owt_input_path}...")
     # owt_vocab, owt_merges = train_bpe(
     #     input_path = owt_input_path,
-    #     vocab_size = 10000,
+    #     vocab_size = 32000,
     #     special_tokens = ["<|endoftext|>"]
     # )
 
     # save_vocab(owt_vocab, owt_vocab_path)
     # save_merges(owt_merges, owt_merges_path)
 
-    # print(f"Training TinyStories tokenizer from {tiny_input_path}...")
-    # Tiny_vocab, Tiny_merges = train_bpe(
-    #     input_path = tiny_input_path,
-    #     vocab_size = 32000,
-    #     special_tokens=["<|endoftext|>"]
-    # )
+    print(f"Training TinyStories tokenizer from {tiny_input_path}...")
+    Tiny_vocab, Tiny_merges = train_bpe(
+        input_path = tiny_input_path,
+        vocab_size = 10000,
+        special_tokens=["<|endoftext|>"]
+    )
 
-    # save_vocab(Tiny_vocab, tiny_vocab_path)
-    # save_merges(Tiny_merges, tiny_merges_path)
+    save_vocab(Tiny_vocab, tiny_vocab_path)
+    save_merges(Tiny_merges, tiny_merges_path)
 
     print("Sampling documents for evaluation...")
     owt_docs = get_sample_docs(owt_input_path, num_docs=10)
     Tiny_docs = get_sample_docs(tiny_input_path, num_docs=10)
 
     print("Evaluating OWT tokenizer...")
-    ratio_owt = evaluate_tokenizer(owt_vocab_path, owt_merges_path, owt_docs)
+    if os.path.exists(owt_vocab_path) and os.path.exists(owt_merges_path):
+        ratio_owt = evaluate_tokenizer(owt_vocab_path, owt_merges_path, owt_docs)
+        print(f"OWT Tokenizer Bytes per Token: {ratio_owt:.4f}")
+    else:
+        print("OWT Tokenizer files not found, skipping evaluation.")
     
     print("Evaluating TinyStories tokenizer...")
     ratio_Tiny = evaluate_tokenizer(tiny_vocab_path, tiny_merges_path, Tiny_docs)
 
-    print(f"OWT Tokenizer Bytes per Token: {ratio_owt:.4f}")
     print(f"TinyStoriesV2-GPT4 Tokenizer Bytes per Token: {ratio_Tiny:.4f}")
+
 
     
 
