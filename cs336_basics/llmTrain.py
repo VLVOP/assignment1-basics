@@ -24,7 +24,11 @@ def train(args):
         d_model=args.d_model,
         d_ff=args.d_ff,
         device=args.device,
-        dtype=torch.float32
+        dtype=torch.float32,
+        use_rmsnorm=not args.no_rmsnorm,
+        norm_type=args.norm_type,
+        use_rope=not args.no_rope,
+        ffn_type=args.ffn_type,
     )
     optimizer = AdamWoptimizer(
         model.parameters(),
@@ -162,6 +166,11 @@ if __name__ == "__main__":
     parser.add_argument("--eval_iters", type=int, default=10, help="评估时的迭代次数")
     parser.add_argument("--save_interval", type=int, default=5000, help="保存检查点的间隔（迭代次数）")
     parser.add_argument("--eps", type=float, default=1e-8, help="AdamW epsilon")
+
+    parser.add_argument("--no_rmsnorm", action='store_true', help="禁用 RMSNorm")
+    parser.add_argument("--norm_type", type=str, default="pre", choices=["pre", "post"], help="层归一化位置")
+    parser.add_argument("--no_rope", action='store_true', help="禁用 RoPE 位置编码")
+    parser.add_argument("--ffn_type", type=str, default="swiglu", choices=["swiglu", "silu"], help="前馈网络激活函数类型")
 
     args = parser.parse_args()
 
